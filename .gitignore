@@ -6,6 +6,7 @@ data/embeddings/
 # Virtual environments
 venv/
 env/
+ENV/
 .venv/
 .env/
 
@@ -30,30 +31,66 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Environment variables
+# Environment variables and API keys
 .env
 .env.local
 .env.production
+*.key
+*.pem
 
-# IDE
+# Data and storage
+data/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+
+# Policy files (sensitive content)
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.tiff
+*.bmp
+
+# IDE and editor files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Logs
-logs/
-*.log
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
 # Temporary files
 *.tmp
 *.temp
-/tmp/
+temp/
+tmp/
 
-# API keys and secrets
-*.key
-secrets.json
-config.json 
+# Application specific
+processed_images/
+processed_pdfs/ 

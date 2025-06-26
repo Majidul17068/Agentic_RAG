@@ -3,6 +3,7 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 streamlit==1.28.1
 pydantic==2.5.0
+python-dotenv==1.0.0
 
 # OCR and Image Processing
 pytesseract==0.3.10
@@ -13,6 +14,9 @@ opencv-python==4.8.1.78
 PyPDF2==3.0.1
 pdfplumber==0.10.3
 pdf2image==1.16.3
+
+# Bengali Language Support
+# Note: Install Tesseract Bengali language pack: sudo apt-get install tesseract-ocr-ben
 
 # AI and ML
 sentence-transformers==2.2.2
@@ -33,7 +37,6 @@ numpy==1.25.2
 # Utilities
 python-multipart==0.0.6
 requests==2.31.0
-python-dotenv==1.0.0
 loguru==0.7.2
 
 # Development and testing

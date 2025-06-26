@@ -20,11 +20,9 @@ class OllamaInterface:
     def __init__(self, model: str = None, base_url: str = None):
         """Initialize the Ollama interface."""
         self.model = model or OLLAMA_CONFIG["model"]
-        self.base_url = base_url or OLLAMA_CONFIG["base_url"]
+        self.base_url = base_url or OLLAMA_CONFIG.get("base_url", "http://localhost:11434")
+        self.client = ollama.Client(host=self.base_url)
         self.timeout = OLLAMA_CONFIG["timeout"]
-        
-        # Configure ollama client
-        ollama.set_host(self.base_url)
         
         # Verify connection
         self._verify_connection()
@@ -33,17 +31,23 @@ class OllamaInterface:
         """Verify Ollama connection and model availability."""
         try:
             # Check if model is available
-            models = ollama.list()
-            model_names = [model["name"] for model in models["models"]]
+            models_response = self.client.list()
+            
+            # Handle both old and new API formats
+            if hasattr(models_response, 'models'):
+                # Old API format
+                model_names = [m.model for m in models_response.models]
+            else:
+                # New API format - response is a dict
+                model_names = [m.get('name', m.get('model', '')) for m in models_response.get('models', [])]
             
             if self.model not in model_names:
                 logger.warning(f"Model {self.model} not found. Available models: {model_names}")
                 logger.info("Attempting to pull the model...")
-                ollama.pull(self.model)
+                self.client.pull(self.model)
                 logger.info(f"Successfully pulled model: {self.model}")
             else:
                 logger.info(f"Model {self.model} is available")
-                
         except Exception as e:
             logger.error(f"Failed to connect to Ollama: {e}")
             raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}")
@@ -61,18 +65,13 @@ class OllamaInterface:
             Generated response text
         """
         try:
-            # Build the full prompt with context
             if context:
-                full_prompt = f"""Context: {context}
-
-Question: {prompt}
-
-Please provide a clear and accurate answer based on the context provided. If the context doesn't contain enough information to answer the question, please say so."""
+                full_prompt = f"""Context: {context}\n\nQuestion: {prompt}\n\nPlease provide a clear and accurate answer based on the context provided. If the context doesn't contain enough information to answer the question, please say so."""
             else:
                 full_prompt = prompt
             
             # Generate response
-            response = ollama.generate(
+            response = self.client.generate(
                 model=self.model,
                 prompt=full_prompt,
                 options={
@@ -110,16 +109,12 @@ Please provide a clear and accurate answer based on the context provided. If the
                 format_instruction = f"Please respond in {response_format} format."
             
             if context:
-                full_prompt = f"""Context: {context}
-
-Question: {prompt}
-
-{format_instruction}"""
+                full_prompt = f"""Context: {context}\n\nQuestion: {prompt}\n\n{format_instruction}"""
             else:
                 full_prompt = f"{prompt}\n\n{format_instruction}"
             
             # Generate response
-            response = ollama.generate(
+            response = self.client.generate(
                 model=self.model,
                 prompt=full_prompt,
                 options={
@@ -171,7 +166,7 @@ Question: {prompt}
             ollama_messages.extend(messages)
             
             # Generate response
-            response = ollama.chat(
+            response = self.client.chat(
                 model=self.model,
                 messages=ollama_messages,
                 options={
@@ -191,14 +186,24 @@ Question: {prompt}
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the current model."""
         try:
-            models = ollama.list()
-            for model in models["models"]:
-                if model["name"] == self.model:
+            models_response = self.client.list()
+            
+            # Handle both old and new API formats
+            if hasattr(models_response, 'models'):
+                # Old API format
+                models = models_response.models
+            else:
+                # New API format - response is a dict
+                models = models_response.get('models', [])
+            
+            for model in models:
+                model_name = model.name if hasattr(model, 'name') else model.get('name', '')
+                if model_name == self.model:
                     return {
-                        "name": model["name"],
-                        "size": model.get("size", "unknown"),
-                        "modified_at": model.get("modified_at", "unknown"),
-                        "digest": model.get("digest", "unknown")
+                        "name": model_name,
+                        "size": getattr(model, 'size', model.get('size', 'unknown')),
+                        "modified_at": getattr(model, 'modified_at', model.get('modified_at', 'unknown')),
+                        "digest": getattr(model, 'digest', model.get('digest', 'unknown'))
                     }
             return {"error": f"Model {self.model} not found"}
         except Exception as e:
@@ -218,16 +223,12 @@ Question: {prompt}
         """
         try:
             if context:
-                full_prompt = f"""Context: {context}
-
-Question: {prompt}
-
-Please provide a clear and accurate answer based on the context provided."""
+                full_prompt = f"""Context: {context}\n\nQuestion: {prompt}\n\nPlease provide a clear and accurate answer based on the context provided."""
             else:
                 full_prompt = prompt
             
             # Stream response
-            for chunk in ollama.generate(
+            for chunk in self.client.generate(
                 model=self.model,
                 prompt=full_prompt,
                 stream=True,

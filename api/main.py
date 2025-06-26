@@ -21,6 +21,7 @@ from core.ocr_processor import OCRProcessor
 from core.vector_store import VectorStore, DocumentProcessor
 from core.llm_interface import OllamaInterface, PolicyAssistant
 from agents.policy_agents import PolicyAgents
+from core.policy_loader import PolicyLoader
 
 # Configure logging
 logger.add(
@@ -81,11 +82,12 @@ document_processor = None
 llm_interface = None
 policy_assistant = None
 policy_agents = None
+policy_loader = None
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize components on startup."""
-    global ocr_processor, vector_store, document_processor, llm_interface, policy_assistant, policy_agents
+    global ocr_processor, vector_store, document_processor, llm_interface, policy_assistant, policy_agents, policy_loader
     
     try:
         logger.info("Initializing SopAssist AI components...")
@@ -102,7 +104,7 @@ async def startup_event():
         document_processor = DocumentProcessor(vector_store)
         logger.info("✓ Document processor initialized")
         
-        # Initialize LLM interface
+        # Initialize LLM interface (for direct LLM calls)
         llm_interface = OllamaInterface()
         logger.info("✓ LLM interface initialized")
         
@@ -110,9 +112,13 @@ async def startup_event():
         policy_assistant = PolicyAssistant(llm_interface)
         logger.info("✓ Policy assistant initialized")
         
-        # Initialize policy agents
-        policy_agents = PolicyAgents(vector_store, llm_interface)
+        # Initialize policy agents with ChatOllama-compatible signature
+        policy_agents = PolicyAgents(vector_store, model="llama3", base_url="http://localhost:11434")
         logger.info("✓ Policy agents initialized")
+        
+        # Initialize policy loader
+        policy_loader = PolicyLoader()
+        logger.info("✓ Policy loader initialized")
         
         logger.info("✅ All components initialized successfully")
         
@@ -134,7 +140,8 @@ async def health_check():
     """Health check endpoint."""
     try:
         # Check if all components are initialized
-        if all([ocr_processor, vector_store, llm_interface, policy_assistant]):
+        if all([ocr_processor, vector_store, llm_interface, policy_assistant, policy_loader]):
+            policy_summary = policy_loader.get_policy_summary()
             return {
                 "status": "healthy",
                 "components": {
@@ -142,8 +149,10 @@ async def health_check():
                     "vector_store": "initialized",
                     "llm_interface": "initialized",
                     "policy_assistant": "initialized",
-                    "policy_agents": "initialized" if policy_agents else "not_initialized"
-                }
+                    "policy_agents": "initialized" if policy_agents else "not_initialized",
+                    "policy_loader": "initialized"
+                },
+                "policies_loaded": policy_summary['total_policies']
             }
         else:
             return {
@@ -161,8 +170,11 @@ async def health_check():
 async def ask_question(request: QuestionRequest):
     """Ask a question about policies."""
     try:
-        if not policy_assistant:
-            raise HTTPException(status_code=503, detail="Policy assistant not initialized")
+        if not policy_assistant or not policy_loader:
+            raise HTTPException(status_code=503, detail="Policy assistant or loader not initialized")
+        
+        # Get relevant policy content for the question
+        policy_context = policy_loader.get_policy_content_for_llm(request.question)
         
         if request.use_agents and policy_agents:
             # Use CrewAI agents for complex reasoning
@@ -171,40 +183,28 @@ async def ask_question(request: QuestionRequest):
                 "answer": result["answer"],
                 "question": request.question,
                 "method": "agents",
-                "status": result["status"]
+                "status": result["status"],
+                "policies_used": len(policy_loader.get_all_policies())
             }
         else:
-            # Use simple vector search + LLM
-            # Search for relevant documents
-            search_results = vector_store.search(request.question, top_k=3)
-            
-            if not search_results:
+            # Use simple LLM with policy context
+            if not policy_context or policy_context == "No policies loaded.":
                 return {
-                    "answer": "I couldn't find any relevant policy documents to answer your question. Please try rephrasing or contact HR for assistance.",
+                    "answer": "I couldn't find any policy documents to answer your question. Please ensure policies have been extracted first.",
                     "question": request.question,
-                    "method": "simple_search",
-                    "status": "no_results"
+                    "method": "simple_llm",
+                    "status": "no_policies"
                 }
             
-            # Extract document content
-            context_documents = [result["document"] for result in search_results]
-            
-            # Generate answer
-            answer = policy_assistant.answer_policy_question(request.question, context_documents)
+            # Generate answer using policy context
+            answer = policy_assistant.answer_policy_question(request.question, [policy_context])
             
             return {
                 "answer": answer,
                 "question": request.question,
-                "method": "simple_search",
+                "method": "simple_llm",
                 "status": "success",
-                "sources": [
-                    {
-                        "content": result["document"][:200] + "...",
-                        "similarity": result["similarity"],
-                        "metadata": result["metadata"]
-                    }
-                    for result in search_results
-                ]
+                "policies_used": len(policy_loader.get_all_policies())
             }
             
     except Exception as e:

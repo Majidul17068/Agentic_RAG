@@ -1,6 +1,6 @@
 # 🎯 Enhanced SopAssist AI - Agentic RAG Policy Assistant
 
-A comprehensive AI-powered policy assistant that processes PDF policy documents and provides intelligent answers using **free LLM models** (Groq, Hugging Face) and **agentic RAG** with CrewAI.
+A comprehensive AI-powered policy assistant that processes PDF policy documents and provides intelligent answers using **free LLM models** (Groq, Hugging Face) and **agentic RAG** with CrewAI. **Now with full Bengali language support!** 🇧🇩
 
 ## 🚀 Key Features
 
@@ -9,12 +9,14 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 - **Intelligent categorization** based on filenames and content
 - **Metadata extraction** (policy type, year, categories)
 - **Batch processing** of entire policy directories
+- **🌍 Bengali language support** with OCR
 
 ### 🤖 **Free LLM Integration**
 - **Groq API** - Fast inference with Llama3.1-8B or Mixtral-8x7B
 - **Hugging Face** - Local models like DialoGPT-medium
 - **Ollama** - Local models (fallback option)
 - **Automatic provider selection** and fallback
+- **🌍 Bilingual responses** (English & Bengali)
 
 ### 🧠 **Agentic RAG Architecture**
 - **Research Agent** - Finds relevant policy documents
@@ -27,6 +29,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 - **Vector Search** with ChromaDB
 - **Similarity-based retrieval**
 - **Category filtering**
+- **🌍 Bengali keyword recognition**
 
 ## 🏗️ System Architecture
 
@@ -34,6 +37,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   PDF Policies  │    │   Image Files   │    │   User Queries  │
 │   (Policy file/)│    │   (data/images) │    │                 │
+│   🌍 Bengali    │    │   🌍 Bengali    │    │   🌍 Bengali    │
 └─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
           │                      │                      │
           ▼                      ▼                      ▼
@@ -41,6 +45,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 │                    Processing Layer                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
 │  │PDF Processor│  │OCR Processor│  │Text Cleaner │            │
+│  │🌍 Bengali   │  │🌍 Bengali   │  │🌍 Bengali   │            │
 │  └─────────────┘  └─────────────┘  └─────────────┘            │
 └─────────────────────────────────────────────────────────────────┘
           │                      │                      │
@@ -49,6 +54,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 │                    Vector Store (ChromaDB)                     │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
 │  │Embeddings   │  │Metadata     │  │Search Index │            │
+│  │🌍 Bengali   │  │🌍 Language  │  │🌍 Bengali   │            │
 │  └─────────────┘  └─────────────┘  └─────────────┘            │
 └─────────────────────────────────────────────────────────────────┘
           │
@@ -58,10 +64,12 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
 │  │Research     │  │Analysis     │  │Synthesis    │            │
 │  │Agent        │  │Agent        │  │Agent        │            │
+│  │🌍 Bengali   │  │🌍 Bengali   │  │🌍 Bengali   │            │
 │  └─────────────┘  └─────────────┘  └─────────────┘            │
 │  ┌─────────────┐                                              │
 │  │Communication│                                              │
 │  │Agent        │                                              │
+│  │🌍 Bengali   │                                              │
 │  └─────────────┘                                              │
 └─────────────────────────────────────────────────────────────────┘
           │
@@ -71,6 +79,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │
 │  │Groq API     │  │Hugging Face │  │Ollama       │            │
 │  │(Free Tier)  │  │(Local)      │  │(Local)      │            │
+│  │🌍 Bengali   │  │🌍 Bengali   │  │🌍 Bengali   │            │
 │  └─────────────┘  └─────────────┘  └─────────────┘            │
 └─────────────────────────────────────────────────────────────────┘
           │
@@ -80,6 +89,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 │  ┌─────────────┐  ┌─────────────┐                              │
 │  │FastAPI      │  │Streamlit    │                              │
 │  │Backend      │  │Frontend     │                              │
+│  │🌍 Bengali   │  │🌍 Bengali   │                              │
 │  └─────────────┘  └─────────────┘                              │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -94,6 +104,7 @@ A comprehensive AI-powered policy assistant that processes PDF policy documents 
 
 ### Optional Dependencies
 - **Tesseract OCR** (for image processing)
+- **Bengali language pack** for Tesseract
 - **Ollama** (for local LLM models)
 - **CUDA** (for GPU acceleration with Hugging Face models)
 
@@ -110,7 +121,16 @@ cd sopassist-ai
 pip install -r requirements.txt
 ```
 
-### 3. Setup Environment Variables (Optional)
+### 3. Setup Bengali Language Support
+```bash
+# Automatic setup
+python scripts/setup_bengali_support.py
+
+# Or manual setup
+python scripts/setup_bengali_support.py --manual
+```
+
+### 4. Setup Environment Variables (Optional)
 ```bash
 # For Groq API (free tier)
 export GROQ_API_KEY="your_groq_api_key"
@@ -119,7 +139,7 @@ export GROQ_API_KEY="your_groq_api_key"
 export LLM_PROVIDER="groq"  # or "huggingface" or "ollama"
 ```
 
-### 4. Add Your Policy Files
+### 5. Add Your Policy Files
 Place your PDF policy files in the `Policy file/` directory:
 ```
 Policy file/
@@ -127,6 +147,7 @@ Policy file/
 ├── House Rent, Furniture And Cook Allowance Policy.pdf
 ├── Medical_Bill_Policy.pdf
 ├── Holiday 2019 (Head Office & Region).pdf
+├── বাংলা নীতি নথি.pdf  # Bengali policy documents
 └── ...
 ```
 
@@ -145,7 +166,7 @@ python start_enhanced_sopassist.py --check-deps
 # Setup directories
 python start_enhanced_sopassist.py --setup
 
-# Process PDF policies
+# Process PDF policies (including Bengali)
 python start_enhanced_sopassist.py --process-pdfs
 
 # Start the complete system
@@ -154,13 +175,16 @@ python start_enhanced_sopassist.py --start-all
 
 ### Option 3: Manual Setup
 ```bash
-# 1. Process PDF policies
+# 1. Setup Bengali support
+python scripts/setup_bengali_support.py
+
+# 2. Process PDF policies
 python scripts/process_policy_pdfs.py
 
-# 2. Start API server
+# 3. Start API server
 python api/enhanced_main.py
 
-# 3. Start frontend (in another terminal)
+# 4. Start frontend (in another terminal)
 streamlit run frontend/app.py
 ```
 
@@ -169,15 +193,23 @@ streamlit run frontend/app.py
 ### Web Interface
 1. **Start the system**: `python start_enhanced_sopassist.py --start-all`
 2. **Open browser**: Navigate to `http://localhost:8501`
-3. **Ask questions** about your policies
+3. **Ask questions** about your policies in English or Bengali
 
 ### API Usage
 ```python
 import requests
 
-# Ask a question
+# Ask a question in English
 response = requests.post("http://localhost:8000/ask", json={
     "question": "What is the vacation policy for employees?",
+    "llm_provider": "groq"
+})
+
+print(response.json()["answer"])
+
+# Ask a question in Bengali
+response = requests.post("http://localhost:8000/ask", json={
+    "question": "কর্মচারীদের ছুটির নীতি কী?",
     "llm_provider": "groq"
 })
 
@@ -204,22 +236,65 @@ python scripts/process_policy_pdfs.py --list
 python scripts/process_policy_pdfs.py --test-search
 ```
 
-## 🎯 Policy Categories
+## 🎯 Policy Categories (English + Bengali)
 
 The system automatically categorizes policies into:
 
-| Category | Keywords | Example Policies |
-|----------|----------|------------------|
-| **Travel** | ta, da, travel, air, ticket, driver | TA-DA Policy, Air Tickets |
-| **Housing** | house, rent, furniture, cook | House Rent Policy |
-| **Salary** | salary, increment, bonus, compensation | Salary Increment Proposal |
-| **Medical** | medical, health, bill, treatment | Medical Bill Policy |
-| **Work Conditions** | holiday, overtime, night, shift | Holiday Policy, Overtime |
-| **Allowances** | allowance, hardship, location, uniform | Hardship Allowance |
-| **Employee Management** | recruitment, retirement, termination | Retirement Policy |
-| **Financial** | financial, budget, expense, claim | Financial Limits |
-| **Farm Operations** | farm, hatchery, production, bio | Farm Management Policy |
-| **General** | policy, circular, notice, order | General Policies |
+| Category | English Keywords | Bengali Keywords | Example Policies |
+|----------|------------------|------------------|------------------|
+| **Travel** | ta, da, travel, air, ticket, driver | ভ্রমণ, টিকিট, ভ্রমণ ভাতা | TA-DA Policy, Air Tickets |
+| **Housing** | house, rent, furniture, cook | বাড়ি, ভাড়া, ফার্নিচার, রান্না | House Rent Policy |
+| **Salary** | salary, increment, bonus, compensation | বেতন, বোনাস, বৃদ্ধি, মজুরি | Salary Increment Proposal |
+| **Medical** | medical, health, bill, treatment | চিকিৎসা, স্বাস্থ্য, বিল, চিকিৎসা বিল | Medical Bill Policy |
+| **Work Conditions** | holiday, overtime, night, shift | ছুটি, অতিরিক্ত, রাত, শিফট | Holiday Policy, Overtime |
+| **Allowances** | allowance, hardship, location, uniform | ভাতা, কষ্ট, ইউনিফর্ম, মোবাইল | Hardship Allowance |
+| **Employee Management** | recruitment, retirement, termination | নিয়োগ, অবসর, বরখাস্ত, নোটিশ | Retirement Policy |
+| **Financial** | financial, budget, expense, claim | আর্থিক, বাজেট, খরচ, দাবি | Financial Limits |
+| **Farm Operations** | farm, hatchery, production, bio | খামার, হ্যাচারি, উৎপাদন, জৈব | Farm Management Policy |
+| **General** | policy, circular, notice, order | নীতি, পরিপত্র, নোটিশ, আদেশ | General Policies |
+
+## 🌍 Bengali Language Support
+
+### Features
+- **Automatic language detection** in PDFs and queries
+- **Bengali OCR** with Tesseract
+- **Bilingual categorization** with Bengali keywords
+- **Bengali responses** from LLM models
+- **Bengali text processing** and cleaning
+
+### Setup Bengali Support
+```bash
+# Check current installation
+python scripts/setup_bengali_support.py --check
+
+# Install Bengali language pack
+python scripts/setup_bengali_support.py --install
+
+# Test Bengali OCR
+python scripts/setup_bengali_support.py --test
+
+# Show manual instructions
+python scripts/setup_bengali_support.py --manual
+```
+
+### Manual Installation
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install tesseract-ocr tesseract-ocr-ben
+
+# CentOS/RHEL/Fedora
+sudo yum install tesseract tesseract-langpack-ben
+# or
+sudo dnf install tesseract tesseract-langpack-ben
+
+# macOS
+brew install tesseract tesseract-lang
+
+# Windows
+# Download from: https://github.com/UB-Mannheim/tesseract/wiki
+# Install with Bengali language pack
+```
 
 ## 🤖 LLM Providers
 
@@ -228,18 +303,21 @@ The system automatically categorizes policies into:
 - **Models**: Llama3.1-8B, Mixtral-8x7B
 - **Speed**: Very fast (sub-second responses)
 - **Setup**: Requires API key
+- **🌍 Bengali**: Excellent support
 
 ### 2. **Hugging Face** (Local)
 - **Models**: DialoGPT-medium, Falcon-7B
 - **Cost**: Free (local processing)
 - **Speed**: Moderate (depends on hardware)
 - **Setup**: Automatic model download
+- **🌍 Bengali**: Good support
 
 ### 3. **Ollama** (Local)
 - **Models**: Llama3, Mistral, CodeLlama
 - **Cost**: Free (local processing)
 - **Speed**: Fast (with good hardware)
 - **Setup**: Requires Ollama installation
+- **🌍 Bengali**: Limited support
 
 ## 🔧 Configuration
 
@@ -259,24 +337,19 @@ OLLAMA_BASE_URL=http://localhost:11434
 
 ### Settings File (`config/settings.py`)
 ```python
-# Free LLM Settings
-FREE_LLM_CONFIG = {
-    "groq": {
-        "default_model": "llama3-8b-8192",
-        "timeout": 30,
-        "max_tokens": 1000
-    },
-    "huggingface": {
-        "default_model": "microsoft/DialoGPT-medium",
-        "device": "auto",
-        "max_length": 512
-    }
+# Language Support Settings
+LANGUAGE_CONFIG = {
+    "supported_languages": ["english", "bengali"],
+    "default_language": "english",
+    "bengali_detection_threshold": 0.1,
+    "bengali_ocr_lang": "ben+eng",
+    "english_ocr_lang": "eng"
 }
 
-# Policy Categories
+# Policy Categories (English + Bengali)
 POLICY_CATEGORIES = {
-    "travel": ["ta", "da", "travel", "air", "ticket"],
-    "housing": ["house", "rent", "furniture", "cook"],
+    "travel": ["ta", "da", "travel", "air", "ticket", "driver", "trip", "allowance", "ভ্রমণ", "টিকিট", "ভ্রমণ ভাতা"],
+    "housing": ["house", "rent", "furniture", "cook", "accommodation", "বাড়ি", "ভাড়া", "ফার্নিচার", "রান্না"],
     # ... more categories
 }
 ```
@@ -284,7 +357,7 @@ POLICY_CATEGORIES = {
 ## 📊 API Endpoints
 
 ### Core Endpoints
-- `POST /ask` - Ask questions about policies
+- `POST /ask` - Ask questions about policies (English & Bengali)
 - `POST /analyze-policy` - Analyze specific policy documents
 - `POST /get-recommendations` - Get policy recommendations
 - `POST /search-policies` - Search for relevant policies
@@ -297,10 +370,15 @@ POLICY_CATEGORIES = {
 
 ### Example API Usage
 ```bash
-# Ask a question
+# Ask a question in English
 curl -X POST "http://localhost:8000/ask" \
   -H "Content-Type: application/json" \
   -d '{"question": "What is the vacation policy?", "llm_provider": "groq"}'
+
+# Ask a question in Bengali
+curl -X POST "http://localhost:8000/ask" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "ছুটির নীতি কী?", "llm_provider": "groq"}'
 
 # Search policies
 curl -X POST "http://localhost:8000/search-policies" \
@@ -317,6 +395,18 @@ curl -X POST "http://localhost:8000/upload-pdf" \
 ### Run Basic Tests
 ```bash
 python start_enhanced_sopassist.py --test
+```
+
+### Test Bengali Support
+```bash
+# Test Bengali OCR
+python scripts/setup_bengali_support.py --test
+
+# Test Bengali PDF processing
+python core/pdf_processor.py
+
+# Test Bengali LLM responses
+python core/free_llm_interface.py
 ```
 
 ### Test Specific Components
@@ -338,15 +428,15 @@ python -m pytest tests/
 
 ```
 sopassist-ai/
-├── 📄 Policy file/              # Your PDF policy files
+├── 📄 Policy file/              # Your PDF policy files (English & Bengali)
 ├── 🏗️ api/
 │   ├── main.py                  # Original API
-│   └── enhanced_main.py         # Enhanced API with PDF support
+│   └── enhanced_main.py         # Enhanced API with PDF & Bengali support
 ├── 🎨 frontend/
 │   └── app.py                   # Streamlit frontend
 ├── 🔧 core/
-│   ├── pdf_processor.py         # PDF text extraction
-│   ├── free_llm_interface.py    # Free LLM integration
+│   ├── pdf_processor.py         # PDF text extraction (Bengali support)
+│   ├── free_llm_interface.py    # Free LLM integration (Bengali support)
 │   ├── vector_store.py          # ChromaDB integration
 │   ├── ocr_processor.py         # Image OCR processing
 │   └── llm_interface.py         # Ollama integration
@@ -355,7 +445,8 @@ sopassist-ai/
 │   └── enhanced_policy_agents.py # Enhanced agentic RAG
 ├── 📜 scripts/
 │   ├── process_policy_pdfs.py   # PDF processing script
-│   └── process_images.py        # Image processing script
+│   ├── process_images.py        # Image processing script
+│   └── setup_bengali_support.py # Bengali language setup
 ├── ⚙️ config/
 │   └── settings.py              # Configuration settings
 ├── 🧪 tests/
@@ -373,7 +464,19 @@ sopassist-ai/
 
 ### Common Issues
 
-#### 1. **PDF Processing Fails**
+#### 1. **Bengali OCR Not Working**
+```bash
+# Check Bengali language pack
+python scripts/setup_bengali_support.py --check
+
+# Install Bengali support
+python scripts/setup_bengali_support.py --install
+
+# Test Bengali OCR
+python scripts/setup_bengali_support.py --test
+```
+
+#### 2. **PDF Processing Fails**
 ```bash
 # Check if PDFs are readable
 python core/pdf_processor.py
@@ -382,7 +485,7 @@ python core/pdf_processor.py
 python start_enhanced_sopassist.py --process-pdfs --force-reprocess
 ```
 
-#### 2. **LLM Provider Not Working**
+#### 3. **LLM Provider Not Working**
 ```bash
 # Check available providers
 python start_enhanced_sopassist.py --info
@@ -391,7 +494,7 @@ python start_enhanced_sopassist.py --info
 python core/free_llm_interface.py
 ```
 
-#### 3. **Vector Store Issues**
+#### 4. **Vector Store Issues**
 ```bash
 # Check vector store status
 python scripts/process_policy_pdfs.py --list
@@ -401,13 +504,13 @@ rm -rf data/embeddings/
 python start_enhanced_sopassist.py --process-pdfs
 ```
 
-#### 4. **Memory Issues**
+#### 5. **Bengali Text Not Recognized**
 ```bash
-# Use smaller models
-export LLM_PROVIDER="groq"  # Use cloud API instead of local
+# Check language detection
+python core/pdf_processor.py
 
-# Reduce batch size in config/settings.py
-BATCH_SIZE = 16  # Instead of 32
+# Verify Bengali characters in text
+python -c "print('বাংলা' in 'বাংলা ভাষা')"
 ```
 
 ### Performance Optimization
@@ -443,6 +546,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **CrewAI** for agent orchestration
 - **ChromaDB** for vector storage
 - **FastAPI** and **Streamlit** for web interfaces
+- **Tesseract** for Bengali OCR support
 
 ## 📞 Support
 
@@ -453,4 +557,6 @@ For support and questions:
 
 ---
 
-**🎯 Ready to transform your policy management with AI? Start with `python start_enhanced_sopassist.py --interactive`!** 
+**🎯 Ready to transform your policy management with AI? Start with `python start_enhanced_sopassist.py --interactive`!**
+
+**🌍 Now with full Bengali language support for your local policy documents!** 🇧🇩 

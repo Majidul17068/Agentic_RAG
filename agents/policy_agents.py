@@ -7,22 +7,28 @@ from typing import List, Dict, Optional
 from loguru import logger
 import sys
 from pathlib import Path
+from langchain.tools import tool
 
 # Add config to path
 sys.path.append(str(Path(__file__).parent.parent))
 from config.settings import CREWAI_CONFIG
-from core.llm_interface import OllamaInterface
 from core.vector_store import VectorStore
+from langchain_community.chat_models import ChatOllama
 
 
 class PolicyAgents:
     """CrewAI agents for policy analysis and question answering."""
     
-    def __init__(self, vector_store: VectorStore, llm_interface: OllamaInterface):
+    def __init__(self, vector_store: VectorStore, model: str = "llama3", base_url: str = "http://localhost:11434"):
         """Initialize the policy agents."""
         self.vector_store = vector_store
-        self.llm_interface = llm_interface
+        # Use ChatOllama for CrewAI compatibility
+        self.llm_interface = ChatOllama(base_url=base_url, model=model)
         self.config = CREWAI_CONFIG
+        # Register tools as LangChain tools
+        self.search_policies_tool = self._search_policies_tool
+        self.analyze_policy_tool = self._analyze_policy_tool
+        self.format_response_tool = self._format_response_tool
         
         # Initialize agents
         self._create_agents()
@@ -40,7 +46,7 @@ class PolicyAgents:
             information from them.""",
             verbose=self.config["verbose"],
             allow_delegation=False,
-            tools=[self._search_policies_tool],
+            tools=[self.search_policies_tool],
             llm=self.llm_interface
         )
         
@@ -54,7 +60,7 @@ class PolicyAgents:
             strong background in legal interpretation and corporate compliance.""",
             verbose=self.config["verbose"],
             allow_delegation=False,
-            tools=[self._analyze_policy_tool],
+            tools=[self.analyze_policy_tool],
             llm=self.llm_interface
         )
         
@@ -68,10 +74,11 @@ class PolicyAgents:
             responses are accurate, complete, and easy to understand.""",
             verbose=self.config["verbose"],
             allow_delegation=False,
-            tools=[self._format_response_tool],
+            tools=[self.format_response_tool],
             llm=self.llm_interface
         )
     
+    @tool
     def _search_policies_tool(self, query: str) -> str:
         """Tool for searching policy documents."""
         try:
@@ -96,6 +103,7 @@ class PolicyAgents:
             logger.error(f"Error in search_policies_tool: {e}")
             return f"Error searching policies: {str(e)}"
     
+    @tool
     def _analyze_policy_tool(self, policy_text: str) -> str:
         """Tool for analyzing policy text."""
         try:
@@ -123,6 +131,7 @@ This analysis provides the essential information from the policy document in a c
             logger.error(f"Error in analyze_policy_tool: {e}")
             return f"Error analyzing policy: {str(e)}"
     
+    @tool
     def _format_response_tool(self, content: str) -> str:
         """Tool for formatting the final response."""
         try:
@@ -379,7 +388,7 @@ def main():
     try:
         # Initialize components
         vector_store = VectorStore()
-        llm_interface = OllamaInterface()
+        llm_interface = ChatOllama(base_url="http://localhost:11434", model="llama3")
         agents = PolicyAgents(vector_store, llm_interface)
         
         # Test question answering
